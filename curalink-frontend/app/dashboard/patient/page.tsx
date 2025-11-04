@@ -172,11 +172,12 @@ export default function PatientDashboard() {
       setTrials(trialsRes.data || []);
       setPublications(pubsRes.data || []);
       setExperts(expertsRes.data || []);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error loading data:', error);
+      const errorObj = error as { response?: { status?: number; data?: { detail?: unknown } }; message?: string };
       
       // Check if it's a 403 error (wrong role)
-      if (error.response?.status === 403) {
+      if (errorObj.response?.status === 403) {
         setError('You are not registered as a patient. Redirecting to researcher dashboard...');
         setTimeout(() => {
           router.push('/dashboard/researcher');
@@ -185,16 +186,16 @@ export default function PatientDashboard() {
         // Extract error message properly
         let errorMessage = 'Failed to load data';
         
-        if (error.response?.data?.detail) {
-          if (typeof error.response.data.detail === 'string') {
-            errorMessage = error.response.data.detail;
-          } else if (Array.isArray(error.response.data.detail)) {
-            errorMessage = error.response.data.detail.map((e: { msg: string }) => e.msg).join(', ');
+        if (errorObj.response?.data?.detail) {
+          if (typeof errorObj.response.data.detail === 'string') {
+            errorMessage = errorObj.response.data.detail;
+          } else if (Array.isArray(errorObj.response.data.detail)) {
+            errorMessage = (errorObj.response.data.detail as { msg: string }[]).map((e: { msg: string }) => e.msg).join(', ');
           } else {
-            errorMessage = JSON.stringify(error.response.data.detail);
+            errorMessage = JSON.stringify(errorObj.response.data.detail);
           }
-        } else if ((error as { message?: string }).message) {
-          errorMessage = (error as { message?: string }).message || 'Unknown error';
+        } else if (errorObj.message) {
+          errorMessage = errorObj.message || 'Unknown error';
         }
         
         setError(errorMessage);
@@ -410,9 +411,9 @@ export default function PatientDashboard() {
                               const favsRes = await favoritesAPI.getAll();
                               setFavorites(favsRes.data || []);
                               alert('Added to favorites!');
-                            } catch (error: any) {
+                            } catch (error: unknown) {
                               console.error('Favorites error:', error);
-                              if (error.response?.status === 400) {
+                              if ((error as { response?: { status?: number } })?.response?.status === 400) {
                                 alert('This item is already in your favorites!');
                               } else {
                                 alert('Failed to add to favorites. Please try again.');
@@ -468,9 +469,9 @@ export default function PatientDashboard() {
                               const favsRes = await favoritesAPI.getAll();
                               setFavorites(favsRes.data || []);
                               alert('Added to favorites!');
-                            } catch (error: any) {
+                            } catch (error: unknown) {
                               console.error('Favorites error:', error);
-                              if (error.response?.status === 400) {
+                              if ((error as { response?: { status?: number } })?.response?.status === 400) {
                                 alert('This item is already in your favorites!');
                               } else {
                                 alert('Failed to add to favorites. Please try again.');

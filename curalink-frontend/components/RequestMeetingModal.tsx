@@ -209,7 +209,7 @@ export default function RequestMeetingModal({ isOpen, onClose, expert, onSuccess
               <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-4">
                 <p className="text-sm text-blue-800 dark:text-blue-300">
                   <strong>Note:</strong> The recipient will review your request and respond within 24-48 hours. 
-                  You'll be notified once they accept or suggest an alternative time.
+                  You&apos;ll be notified once they accept or suggest an alternative time.
                 </p>
               </div>
 

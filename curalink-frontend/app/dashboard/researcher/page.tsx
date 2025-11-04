@@ -267,7 +267,7 @@ export default function ResearcherDashboard() {
                         console.error('No meeting_id found in notification');
                         alert('Error: Could not find meeting ID');
                       }
-                    } catch (error) {
+                    } catch {
                       console.error('Failed to update meeting status');
                       alert('Failed to update meeting status');
                     }
@@ -534,8 +534,8 @@ export default function ResearcherDashboard() {
                                 console.log('Deleting meeting with ID:', meetingId);
                                 await meetingsAPI.cancel(meetingId);
                                 loadData(); // Reload data
-                              } catch (error) {
-                                console.error('Failed to delete meeting:', error);
+                              } catch {
+                                console.error('Failed to delete meeting');
                                 alert('Failed to delete meeting');
                               }
                             }
