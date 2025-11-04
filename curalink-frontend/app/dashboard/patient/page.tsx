@@ -67,15 +67,6 @@ interface Meeting {
   expert?: { id: string; full_name: string };
 }
 
-interface ErrorResponse {
-  response?: {
-    status: number;
-    data?: {
-      detail: string | { msg: string }[] | unknown;
-    };
-  };
-  message?: string;
-}
 
 export default function PatientDashboard() {
   const router = useRouter();
@@ -145,7 +136,7 @@ export default function PatientDashboard() {
     setError(null);
     try {
       // Load profile first to get condition
-      const profileRes = await usersAPI.getPatientProfile();
+      await usersAPI.getPatientProfile();
       
       // Load critical data first (favorites and meetings)
       const [favsRes, meetingsRes] = await Promise.all([
@@ -202,8 +193,8 @@ export default function PatientDashboard() {
           } else {
             errorMessage = JSON.stringify(error.response.data.detail);
           }
-        } else if (error.message) {
-          errorMessage = error.message || 'Unknown error';
+        } else if ((error as { message?: string }).message) {
+          errorMessage = (error as { message?: string }).message || 'Unknown error';
         }
         
         setError(errorMessage);
@@ -542,7 +533,7 @@ export default function PatientDashboard() {
                               await favoritesAPI.remove(parseInt(fav.id));
                               setFavorites(favorites.filter(f => f.id !== fav.id));
                               alert('Removed from favorites!');
-                            } catch (error) {
+                            } catch {
                               alert('Failed to remove from favorites');
                             }
                           }}
@@ -669,18 +660,18 @@ export default function PatientDashboard() {
 
               {/* Meetings for patient */}
               <div>
-                <h3 className="text-2xl font-bold mb-4">Accepted Meetings ({meetings.filter((m:any)=> m.status==='accepted' || m.status==='scheduled').length})</h3>
+                <h3 className="text-2xl font-bold mb-4">Accepted Meetings ({meetings.filter((m: Meeting)=> m.status==='accepted' || m.status==='scheduled').length})</h3>
                 <div className="space-y-4">
-                  {meetings.filter((m:any)=> m.status==='accepted' || m.status==='scheduled').length === 0 ? (
+                  {meetings.filter((m: Meeting)=> m.status==='accepted' || m.status==='scheduled').length === 0 ? (
                     <div className="bg-white rounded-xl p-8 text-center shadow-lg border border-gray-100">
                       <p className="text-gray-500">No accepted meetings yet</p>
                     </div>
                   ) : (
-                    meetings.filter((m:any)=> m.status==='accepted' || m.status==='scheduled').slice(0,5).map((meeting:any)=> (
+                    meetings.filter((m: Meeting)=> m.status==='accepted' || m.status==='scheduled').slice(0,5).map((meeting: Meeting)=> (
                       <motion.div key={meeting.id} className="bg-white rounded-xl p-6 flex items-center justify-between shadow-lg hover:shadow-xl transition-all border border-gray-100" whileHover={{ x: 5 }}>
                         <div>
                           <h4 className="font-bold text-gray-900 mb-1 text-lg">
-                            {meeting.populated_participants?.find((p: any) => p.id !== meeting.organizer_id)?.full_name || 'Expert'}
+                            {meeting.populated_participants?.find((p: { id: string; full_name: string }) => p.id !== meeting.organizer_id)?.full_name || 'Expert'}
                           </h4>
                           <p className="text-sm text-gray-700">{meeting.description || meeting.message}</p>
                           <p className="text-xs text-gray-500 mt-1">
@@ -690,7 +681,7 @@ export default function PatientDashboard() {
                         <div className="flex gap-2">
                           <button
                             onClick={() => {
-                              const expert = meeting.populated_participants?.find((p: any) => p.id !== meeting.organizer_id);
+                              const expert = meeting.populated_participants?.find((p: { id: string; full_name: string }) => p.id !== meeting.organizer_id);
                               if (expert) {
                                 setSelectedMeeting({
                                   ...meeting,
@@ -706,7 +697,7 @@ export default function PatientDashboard() {
                           <button
                             onClick={async () => {
                               try {
-                                const expert = meeting.populated_participants?.find((p: any) => p.id !== meeting.organizer_id);
+                                const expert = meeting.populated_participants?.find((p: { id: string; full_name: string }) => p.id !== meeting.organizer_id);
                                 if (expert) {
                                   const roomName = `curalink-meeting-${meeting.id}`;
                                   
@@ -737,7 +728,7 @@ export default function PatientDashboard() {
                                   await meetingsAPI.cancel(meeting.id);
                                   setMeetings(meetings.filter(m => m.id !== meeting.id));
                                   alert('Meeting deleted successfully!');
-                                } catch (error) {
+                                } catch {
                                   alert('Failed to delete meeting');
                                 }
                               }

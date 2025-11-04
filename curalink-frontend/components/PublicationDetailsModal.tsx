@@ -3,10 +3,23 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ExternalLink, Calendar, Users, BookOpen } from 'lucide-react';
 
+interface Publication {
+  pmid: string;
+  title: string;
+  abstract?: string;
+  ai_summary?: string;
+  authors: string;
+  journal: string;
+  publication_date?: string;
+  doi?: string;
+  keywords?: string[] | string;
+  url?: string;
+}
+
 interface PublicationDetailsModalProps {
   isOpen: boolean;
   onClose: () => void;
-  publication: any;
+  publication: Publication | null;
 }
 
 export default function PublicationDetailsModal({ isOpen, onClose, publication }: PublicationDetailsModalProps) {
@@ -125,7 +138,7 @@ export default function PublicationDetailsModal({ isOpen, onClose, publication }
                   <div className="flex flex-wrap gap-2">
                     {(Array.isArray(publication.keywords) 
                       ? publication.keywords 
-                      : publication.keywords?.split(',') || []
+                      : (publication.keywords as string)?.split(',') || []
                     ).map((keyword: string, index: number) => (
                       <span
                         key={index}

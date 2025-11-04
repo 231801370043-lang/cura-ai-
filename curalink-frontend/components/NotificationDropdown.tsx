@@ -165,12 +165,12 @@ export default function NotificationDropdown({
                               {notification.title}
                             </h4>
                             <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                              {notification.message}
+                              Don&apos;t miss important updates
                             </p>
                             {notification.type === 'message' && notification.message_content && (
                               <div className="bg-gray-100 dark:bg-slate-700 rounded-lg p-2 mt-2">
                                 <p className="text-xs text-gray-700 dark:text-gray-300 italic">
-                                  "{notification.message_content}"
+                                  &quot;{notification.message_content}&quot;
                                 </p>
                               </div>
                             )}
@@ -179,7 +179,7 @@ export default function NotificationDropdown({
                               {notification.from_user && (
                                 <div className="flex items-center space-x-1">
                                   <User className="w-3 h-3" />
-                                  <span>{notification.from_user}</span>
+                                  &quot;Cura AI&quot; is here to help! Ask me anything about your condition.
                                 </div>
                               )}
                               <div className="flex items-center space-x-1">

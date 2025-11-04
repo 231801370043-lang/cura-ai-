@@ -5,10 +5,19 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, Calendar, Loader, Video, MessageCircle } from 'lucide-react';
 import { meetingsAPI } from '@/lib/api';
 
+interface Expert {
+  id: string;
+  name: string;
+  full_name?: string;
+  specialization?: string;
+  specialty?: string;
+  institution?: string;
+}
+
 interface RequestMeetingModalProps {
   isOpen: boolean;
   onClose: () => void;
-  expert: any;
+  expert: Expert | null;
   onSuccess: () => void;
 }
 
@@ -42,6 +51,7 @@ export default function RequestMeetingModal({ isOpen, onClose, expert, onSuccess
     setIsLoading(true);
 
     try {
+      if (!expert) return;
       await meetingsAPI.create({
         expert_id: expert.id,
         message: formatMessage()
@@ -50,21 +60,8 @@ export default function RequestMeetingModal({ isOpen, onClose, expert, onSuccess
       setFormData({ message: '', preferred_date: '', meeting_type: 'video' });
       onSuccess();
       onClose();
-    } catch (error: any) {
-      let errorMessage = 'Failed to send meeting request. Please try again.';
-      
-      if (error.response?.data?.detail) {
-        if (typeof error.response.data.detail === 'string') {
-          errorMessage = error.response.data.detail;
-        } else if (Array.isArray(error.response.data.detail)) {
-          errorMessage = error.response.data.detail.map((e: any) => e.msg || e.message || e).join(', ');
-        } else {
-          errorMessage = JSON.stringify(error.response.data.detail);
-        }
-      } else if (error.message) {
-        errorMessage = error.message;
-      }
-      
+    } catch (error: unknown) {
+      const errorMessage = (error as { response?: { data?: { detail?: string } } })?.response?.data?.detail || 'Failed to send request';
       setError(errorMessage);
     } finally {
       setIsLoading(false);

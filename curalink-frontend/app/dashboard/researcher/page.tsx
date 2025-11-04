@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import {
-  Brain, Users, MessageCircle, FileText, LogOut, Menu, Home, BookOpen, Plus, Sun, Moon, X
+  Brain, Users, MessageCircle, FileText, LogOut, Menu, Home, BookOpen, Plus, Sun, Moon
 } from 'lucide-react';
 import { forumsAPI, meetingsAPI, notificationsAPI } from '@/lib/api';
 import CreateForumModal from '@/components/CreateForumModal';
@@ -44,15 +44,6 @@ interface Meeting {
   populated_participants?: { id: string; full_name: string }[];
 }
 
-interface ErrorResponse {
-  response?: {
-    status: number;
-    data?: {
-      detail: string | { msg: string }[] | unknown;
-    };
-  };
-  message?: string;
-}
 
 export default function ResearcherDashboard() {
   const router = useRouter();
@@ -130,9 +121,9 @@ export default function ResearcherDashboard() {
       
       setForums(forumsRes.data || []);
       setMeetings(meetingsRes.data || []);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error loading data:', error);
-      setError(error.message || 'Failed to load data');
+      setError((error as { message?: string })?.message || 'Failed to load data');
     } finally {
       setLoading(false);
     }
@@ -159,8 +150,8 @@ export default function ResearcherDashboard() {
     const interval = window.setInterval(() => {
       const now = new Date().getTime();
       meetings
-        .filter((m: any) => m.status === 'accepted')
-        .forEach((m: any) => {
+        .filter((m: Meeting) => m.status === 'accepted')
+        .forEach((m: Meeting) => {
           const d = parsePreferredDate(m.message);
           if (!d) return;
           const diff = d.getTime() - now;
@@ -270,14 +261,14 @@ export default function ResearcherDashboard() {
                         console.log('Updating meeting status:', notification.meeting_id, action === 'accept' ? 'accepted' : 'rejected');
                         await meetingsAPI.updateStatus(notification.meeting_id, action === 'accept' ? 'accepted' : 'rejected');
                         markAsRead(notificationId);
-                        loadData(); // Reload data to show updated meetings
+                        loadData(); 
                         alert(`Meeting ${action === 'accept' ? 'accepted' : 'declined'} successfully!`);
                       } else {
                         console.error('No meeting_id found in notification');
                         alert('Error: Could not find meeting ID');
                       }
                     } catch (error) {
-                      console.error('Failed to update meeting status:', error);
+                      console.error('Failed to update meeting status');
                       alert('Failed to update meeting status');
                     }
                   }

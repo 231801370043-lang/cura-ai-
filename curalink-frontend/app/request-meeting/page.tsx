@@ -5,7 +5,6 @@ import { motion } from 'framer-motion';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Calendar, Video, MessageCircle, ArrowLeft, Loader, CheckCircle } from 'lucide-react';
 import { meetingsAPI } from '@/lib/api';
-import { useTheme } from '@/contexts/ThemeContext';
 
 export default function RequestMeetingPage() {
   const router = useRouter();
@@ -44,7 +43,7 @@ export default function RequestMeetingPage() {
           institution: 'Stanford University'
         });
       }
-    } catch (error) {
+    } catch {
       setError('Failed to load expert information');
     } finally {
       setLoading(false);
@@ -81,21 +80,8 @@ export default function RequestMeetingPage() {
       setTimeout(() => {
         router.push('/dashboard/patient');
       }, 2000);
-    } catch (error: any) {
-      let errorMessage = 'Failed to send meeting request. Please try again.';
-      
-      if (error.response?.data?.detail) {
-        if (typeof error.response.data.detail === 'string') {
-          errorMessage = error.response.data.detail;
-        } else if (Array.isArray(error.response.data.detail)) {
-          errorMessage = error.response.data.detail.map((e: any) => e.msg || e.message || e).join(', ');
-        } else {
-          errorMessage = JSON.stringify(error.response.data.detail);
-        }
-      } else if (error.message) {
-        errorMessage = error.message;
-      }
-      
+    } catch (error: unknown) {
+      const errorMessage = (error as { response?: { data?: { detail?: string } } })?.response?.data?.detail || 'Failed to send meeting request';
       setError(errorMessage);
     } finally {
       setSubmitting(false);
@@ -259,7 +245,7 @@ export default function RequestMeetingPage() {
             <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-4">
               <p className="text-sm text-blue-800 dark:text-blue-300">
                 <strong>Note:</strong> The recipient will review your request and respond within 24-48 hours. 
-                You'll be notified once they accept or suggest an alternative time.
+                You&apos;ll be notified once they accept or suggest an alternative time.
               </p>
             </div>
 

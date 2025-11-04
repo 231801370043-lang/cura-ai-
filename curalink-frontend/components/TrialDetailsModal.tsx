@@ -5,10 +5,28 @@ import { X, ExternalLink, MapPin, Calendar, Users, FileText, Heart } from 'lucid
 import { useState } from 'react';
 import { favoritesAPI } from '@/lib/api';
 
+interface Trial {
+  nct_id: string;
+  title: string;
+  summary?: string;
+  ai_summary?: string;
+  phase?: string;
+  status?: string;
+  location?: string;
+  sponsor?: string;
+  conditions?: string[];
+  interventions?: string[];
+  eligibility?: string;
+  contact_info?: string;
+  start_date?: string;
+  enrollment?: number;
+  detailed_description?: string;
+}
+
 interface TrialDetailsModalProps {
   isOpen: boolean;
   onClose: () => void;
-  trial: any;
+  trial: Trial | null;
 }
 
 export default function TrialDetailsModal({ isOpen, onClose, trial }: TrialDetailsModalProps) {

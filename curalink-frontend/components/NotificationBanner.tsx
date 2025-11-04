@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Bell, Check, Calendar, User, Clock, Video, MessageCircle, Phone, PhoneOff } from 'lucide-react';
 
@@ -25,7 +25,7 @@ interface NotificationBannerProps {
 }
 
 export default function NotificationBanner({ notification, onClose, onAction }: NotificationBannerProps) {
-  const [isVisible, setIsVisible] = useState(true);
+  const [isVisible, setIsVisible] = React.useState(true);
 
   const handleClose = () => {
     setIsVisible(false);
@@ -86,7 +86,7 @@ export default function NotificationBanner({ notification, onClose, onAction }: 
                     {isMessage && notification.message_content && (
                       <div className="bg-white/10 rounded-lg p-3 mb-2">
                         <p className="text-white/80 text-sm italic">
-                          "{notification.message_content}"
+                          &quot;{notification.message_content}&quot;
                         </p>
                       </div>
                     )}

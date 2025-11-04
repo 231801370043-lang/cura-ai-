@@ -82,16 +82,17 @@ export default function CuraAIChat({ isOpen, onClose, userCondition }: CuraAICha
       };
 
       setMessages(prev => [...prev, aiMessage]);
-    } catch (error: any) {
-      console.error('CuraAI Error:', error);
+    } catch (error: unknown) {
+      console.error('Chat error:', error);
       let errorContent = 'I apologize, but I\'m having trouble connecting right now. Please try again in a moment.';
       
       // More specific error messages
-      if (error.response?.status === 500) {
+      const errorObj = error as { response?: { status?: number }; message?: string };
+      if (errorObj.response?.status === 500) {
         errorContent = 'AI service is temporarily unavailable. Please try again later.';
-      } else if (error.response?.status === 401) {
+      } else if (errorObj.response?.status === 401) {
         errorContent = 'Authentication error. Please refresh the page and try again.';
-      } else if (error.message?.includes('Network Error')) {
+      } else if (errorObj.message?.includes('Network Error')) {
         errorContent = 'Network connection issue. Please check your internet connection.';
       }
 
