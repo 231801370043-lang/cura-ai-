@@ -136,7 +136,7 @@ export default function NotificationDropdown({
                     No notifications yet
                   </p>
                   <p className="text-sm text-gray-400 dark:text-slate-500 mt-1">
-                    We'll notify you when something important happens
+                    We&apos;ll notify you when something important happens
                   </p>
                 </div>
               ) : (

@@ -447,7 +447,7 @@ export default function ResearcherDashboard() {
                               await meetingsAPI.updateStatus(meeting.id, 'accepted');
                               alert(`Meeting request from ${meeting.requester?.full_name} accepted! You can now schedule the meeting.`);
                               loadData();
-                            } catch (error) {
+                            } catch {
                               alert('Failed to accept meeting request');
                             }
                           }}
@@ -461,7 +461,7 @@ export default function ResearcherDashboard() {
                               await meetingsAPI.updateStatus(meeting.id, 'declined');
                               alert('Meeting request declined');
                               loadData();
-                            } catch (error) {
+                            } catch {
                               alert('Failed to decline meeting request');
                             }
                           }}
