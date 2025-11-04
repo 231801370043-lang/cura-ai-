@@ -1,12 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { motion } from 'framer-motion';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Calendar, Video, MessageCircle, ArrowLeft, Loader, CheckCircle } from 'lucide-react';
 import { meetingsAPI } from '@/lib/api';
 
-export default function RequestMeetingPage() {
+function RequestMeetingContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const expertId = searchParams.get('expertId');
@@ -284,5 +284,17 @@ export default function RequestMeetingPage() {
         </motion.div>
       </div>
     </div>
+  );
+}
+
+export default function RequestMeetingPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-slate-900 dark:via-purple-900 dark:to-slate-900 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-primary-500"></div>
+      </div>
+    }>
+      <RequestMeetingContent />
+    </Suspense>
   );
 }
