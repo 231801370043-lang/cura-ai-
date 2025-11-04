@@ -4,16 +4,15 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Calendar, Video, MessageCircle, ArrowLeft, Loader, CheckCircle } from 'lucide-react';
-import { meetingsAPI, usersAPI } from '@/lib/api';
+import { meetingsAPI } from '@/lib/api';
 import { useTheme } from '@/contexts/ThemeContext';
 
 export default function RequestMeetingPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { theme } = useTheme();
   const expertId = searchParams.get('expertId');
   
-  const [expert, setExpert] = useState<any>(null);
+  const [expert, setExpert] = useState<{ id: string; full_name: string; specialization?: string; institution?: string } | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -37,12 +36,14 @@ export default function RequestMeetingPage() {
     try {
       // For now, we'll use mock data since we don't have a direct expert API
       // In a real app, you'd fetch the expert details
-      setExpert({
-        id: expertId,
-        full_name: 'Dr. HONGKONG',
-        specialty: 'Oncology',
-        institution: 'Stanford University'
-      });
+      if (expertId) {
+        setExpert({
+          id: expertId,
+          full_name: 'Dr. HONGKONG',
+          specialization: 'Oncology',
+          institution: 'Stanford University'
+        });
+      }
     } catch (error) {
       setError('Failed to load expert information');
     } finally {
@@ -162,7 +163,7 @@ export default function RequestMeetingPage() {
               </div>
               <div>
                 <h3 className="text-xl font-bold text-gray-900 dark:text-white">{expert.full_name}</h3>
-                <p className="text-sm text-gray-700 dark:text-gray-300 font-medium">{expert.specialty || 'Researcher'}</p>
+                <p className="text-sm text-gray-700 dark:text-gray-300 font-medium">{expert.specialization || 'Researcher'}</p>
                 <p className="text-xs text-gray-600 dark:text-gray-400">{expert.institution}</p>
               </div>
             </div>

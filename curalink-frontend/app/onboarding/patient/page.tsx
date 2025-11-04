@@ -43,9 +43,10 @@ export default function PatientOnboarding() {
       });
 
       router.push('/dashboard/patient');
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Registration error:', error);
-      alert(error.response?.data?.detail || 'Registration failed');
+      const errorMessage = (error as { response?: { data?: { detail?: string } } })?.response?.data?.detail || 'Registration failed';
+      alert(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -96,7 +97,7 @@ export default function PatientOnboarding() {
             <h1 className="text-4xl font-bold gradient-text">Patient Onboarding</h1>
           </div>
           <p className="text-white text-lg font-medium drop-shadow-lg">
-            Let's get you started on your journey to discovery
+            Let&apos;s get you started on your journey to discovery
           </p>
         </motion.div>
 
@@ -230,7 +231,7 @@ export default function PatientOnboarding() {
                       value={formData.medicalCondition}
                       onChange={(e) => setFormData({ ...formData, medicalCondition: e.target.value })}
                       className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:border-secondary-500 focus:ring-2 focus:ring-secondary-200 transition-all outline-none resize-none"
-                      placeholder="Describe your condition naturally (e.g., 'I have lung cancer')"
+                      placeholder="Describe your condition naturally (e.g., &apos;I have lung cancer&apos;)"
                       rows={4}
                     />
                     <p className="text-sm text-white font-medium mt-2 drop-shadow-md">
@@ -290,7 +291,7 @@ export default function PatientOnboarding() {
                 </motion.div>
 
                 <h2 className="text-3xl font-bold text-white mb-4 drop-shadow-lg">
-                  You're All Set!
+                  You&apos;re All Set!
                 </h2>
                 <p className="text-lg text-white font-medium mb-6 drop-shadow-md">
                   Ready to discover clinical trials, publications, and connect with experts?

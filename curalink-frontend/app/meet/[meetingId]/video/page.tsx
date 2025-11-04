@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { motion } from "framer-motion";
 import { ArrowLeft } from "lucide-react";
 
 export default function MeetingVideoPage() {

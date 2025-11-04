@@ -34,10 +34,10 @@ export default function ConversationChatModal({ isOpen, onClose, otherUser }: Co
 
     const loadMessages = async () => {
       try {
-        const res = await chatAPI.getMessages(otherUser.id);
+        const res = await chatAPI.getMessages(otherUser.id.toString());
         setMessages(res.data || []);
         setTimeout(scrollToBottom, 100);
-      } catch (e) {}
+      } catch { /* ignore errors */ }
     };
 
     loadMessages();
@@ -54,7 +54,7 @@ export default function ConversationChatModal({ isOpen, onClose, otherUser }: Co
     try {
       await chatAPI.sendMessage({ receiver_id: otherUser.id, message: input.trim() });
       setInput('');
-      const res = await chatAPI.getMessages(otherUser.id);
+      const res = await chatAPI.getMessages(otherUser.id.toString());
       setMessages(res.data || []);
       setTimeout(scrollToBottom, 100);
     } finally {

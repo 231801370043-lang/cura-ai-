@@ -44,9 +44,10 @@ export default function ResearcherOnboarding() {
       });
 
       router.push('/dashboard/researcher');
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Registration error:', error);
-      alert(error.response?.data?.detail || 'Registration failed');
+      const errorMessage = (error as { response?: { data?: { detail?: string } } })?.response?.data?.detail || 'Registration failed';
+      alert(errorMessage);
     } finally {
       setLoading(false);
     }

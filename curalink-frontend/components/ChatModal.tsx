@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Send, MessageCircle, User } from 'lucide-react';
+import { X, Send, MessageCircle } from 'lucide-react';
 import { chatAPI } from '@/lib/api';
 
 interface Message {
@@ -26,7 +26,7 @@ export default function ChatModal({ isOpen, onClose, otherUser }: ChatModalProps
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(false);
-  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [currentUser, setCurrentUser] = useState<{ id: string; full_name: string } | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {

@@ -32,8 +32,9 @@ export default function CreateForumModal({ isOpen, onClose, onSuccess }: CreateF
       setFormData({ title: '', description: '', category: 'General' });
       onSuccess();
       onClose();
-    } catch (error: any) {
-      setError(error.response?.data?.detail || 'Failed to create forum. Please try again.');
+    } catch (error: unknown) {
+      const errorMessage = (error as { response?: { data?: { detail?: string } } })?.response?.data?.detail || 'Failed to create forum. Please try again.';
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }

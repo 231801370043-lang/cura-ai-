@@ -4,9 +4,9 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import {
-  Heart, Search, BookOpen, Users, Star, Bell, LogOut, Sparkles, Menu, Home, FileText, UserCircle, X, Sun, Moon
+  Heart, BookOpen, Users, Star, LogOut, Sparkles, Menu, Home, FileText, X, Sun, Moon
 } from 'lucide-react';
-import { trialsAPI, publicationsAPI, expertsAPI, favoritesAPI, usersAPI, chatAPI, meetingsAPI, notificationsAPI } from '@/lib/api';
+import { trialsAPI, publicationsAPI, expertsAPI, favoritesAPI, usersAPI, meetingsAPI, notificationsAPI } from '@/lib/api';
 import CuraAIChat from '@/components/CuraAIChat';
 import TrialDetailsModal from '@/components/TrialDetailsModal';
 import RequestMeetingModal from '@/components/RequestMeetingModal';
@@ -17,7 +17,65 @@ import ChatModal from '@/components/ChatModal';
 import VideoCallModal from '@/components/VideoCallModal';
 import { useNotifications } from '@/contexts/NotificationContext';
 import { useTheme } from '@/contexts/ThemeContext';
-import dynamic from 'next/dynamic';
+
+interface User {
+  id: string;
+  full_name: string;
+  medical_condition?: string;
+}
+
+interface Trial {
+  nct_id: string;
+  title: string;
+  phase?: string;
+  ai_summary?: string;
+  summary?: string;
+}
+
+interface Publication {
+  pmid: string;
+  title: string;
+  ai_summary?: string;
+  abstract?: string;
+  authors: string;
+  journal: string;
+}
+
+interface Expert {
+  id: string;
+  name: string;
+  full_name?: string;
+  specialization?: string;
+  institution?: string;
+}
+
+interface Favorite {
+  id: string;
+  item_type: string;
+  item_id: string;
+  item_data: string;
+  created_at: string;
+}
+
+interface Meeting {
+  id: string;
+  status: string;
+  message: string;
+  description?: string;
+  organizer_id: string;
+  populated_participants?: { id: string; full_name: string }[];
+  expert?: { id: string; full_name: string };
+}
+
+interface ErrorResponse {
+  response?: {
+    status: number;
+    data?: {
+      detail: string | { msg: string }[] | unknown;
+    };
+  };
+  message?: string;
+}
 
 export default function PatientDashboard() {
   const router = useRouter();
@@ -30,26 +88,25 @@ export default function PatientDashboard() {
     markAllAsRead, 
     deleteNotification, 
     dismissBanner,
-    onCallAccepted
   } = useNotifications();
   const [activeTab, setActiveTab] = useState('feed');
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [user, setUser] = useState<any>(null);
-  const [trials, setTrials] = useState<any[]>([]);
-  const [publications, setPublications] = useState<any[]>([]);
-  const [experts, setExperts] = useState<any[]>([]);
-  const [favorites, setFavorites] = useState<any[]>([]);
-  const [meetings, setMeetings] = useState<any[]>([]);
+  const [user, setUser] = useState<User | null>(null);
+  const [trials, setTrials] = useState<Trial[]>([]);
+  const [publications, setPublications] = useState<Publication[]>([]);
+  const [experts, setExperts] = useState<Expert[]>([]);
+  const [favorites, setFavorites] = useState<Favorite[]>([]);
+  const [meetings, setMeetings] = useState<Meeting[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showCuraAI, setShowCuraAI] = useState(false);
-  const [selectedTrial, setSelectedTrial] = useState<any>(null);
+  const [selectedTrial, setSelectedTrial] = useState<Trial | null>(null);
   const [showTrialDetails, setShowTrialDetails] = useState(false);
-  const [selectedExpert, setSelectedExpert] = useState<any>(null);
+  const [selectedExpert, setSelectedExpert] = useState<Expert | null>(null);
   const [showRequestMeeting, setShowRequestMeeting] = useState(false);
-  const [selectedPublication, setSelectedPublication] = useState<any>(null);
+  const [selectedPublication, setSelectedPublication] = useState<Publication | null>(null);
   const [showPublicationDetails, setShowPublicationDetails] = useState(false);
-  const [selectedMeeting, setSelectedMeeting] = useState<any>(null);
+  const [selectedMeeting, setSelectedMeeting] = useState<Meeting | null>(null);
   const [showChat, setShowChat] = useState(false);
   const [showVideoCall, setShowVideoCall] = useState(false);
   const [videoRoom, setVideoRoom] = useState('');
@@ -89,7 +146,6 @@ export default function PatientDashboard() {
     try {
       // Load profile first to get condition
       const profileRes = await usersAPI.getPatientProfile();
-      const condition = profileRes.data.medical_condition || 'cancer';
       
       // Load critical data first (favorites and meetings)
       const [favsRes, meetingsRes] = await Promise.all([
@@ -142,12 +198,12 @@ export default function PatientDashboard() {
           if (typeof error.response.data.detail === 'string') {
             errorMessage = error.response.data.detail;
           } else if (Array.isArray(error.response.data.detail)) {
-            errorMessage = error.response.data.detail.map((e: any) => e.msg || e).join(', ');
+            errorMessage = error.response.data.detail.map((e: { msg: string }) => e.msg).join(', ');
           } else {
             errorMessage = JSON.stringify(error.response.data.detail);
           }
         } else if (error.message) {
-          errorMessage = error.message;
+          errorMessage = error.message || 'Unknown error';
         }
         
         setError(errorMessage);
@@ -180,14 +236,15 @@ export default function PatientDashboard() {
     if (!meetings?.length) return;
     const interval = window.setInterval(() => {
       const now = Date.now();
-      meetings.filter((m:any)=> m.status==='accepted').forEach((m:any)=>{
+      meetings.filter((m: Meeting)=> m.status==='accepted').forEach((m: Meeting)=>{
         const d = parsePreferredDate(m.message);
         if (!d) return;
         const diff = d.getTime() - now;
         if (diff > 0 && diff < 10*60*1000) {
           const key = `patient_meeting_notified_${m.id}`;
           if (!sessionStorage.getItem(key)) {
-            alert(`Reminder: Meeting with ${m.expert?.full_name || 'researcher'} at ${d.toLocaleString()}`);
+            const expertName = m.populated_participants?.find(p => p.id !== m.organizer_id)?.full_name || 'researcher';
+            alert(`Reminder: Meeting with ${expertName} at ${d.toLocaleString()}`);
             sessionStorage.setItem(key,'1');
           }
         }
@@ -482,7 +539,7 @@ export default function PatientDashboard() {
                           onClick={async (e) => {
                             e.stopPropagation(); // Prevent triggering the card click
                             try {
-                              await favoritesAPI.remove(fav.id);
+                              await favoritesAPI.remove(parseInt(fav.id));
                               setFavorites(favorites.filter(f => f.id !== fav.id));
                               alert('Removed from favorites!');
                             } catch (error) {
@@ -777,6 +834,10 @@ export default function PatientDashboard() {
               try {
                 if (notification?.sender_id) {
                   setSelectedMeeting({
+                    id: '',
+                    status: '',
+                    message: '',
+                    organizer_id: '',
                     expert: {
                       id: notification.sender_id,
                       full_name: notification.message.split(' from ')[1] || 'User'

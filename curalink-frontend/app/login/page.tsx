@@ -29,9 +29,10 @@ export default function Login() {
       } else {
         router.push('/dashboard/researcher');
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Login error:', error);
-      alert(error.response?.data?.detail || 'Login failed');
+      const errorMessage = (error as { response?: { data?: { detail?: string } } })?.response?.data?.detail || 'Login failed';
+      alert(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -136,7 +137,7 @@ export default function Login() {
 
           <div className="mt-6 text-center">
             <p className="text-gray-800 dark:text-gray-200 font-medium">
-              Don't have an account?{' '}
+              Don&apos;t have an account?{' '}
               <button
                 onClick={() => router.push('/')}
                 className="text-primary-600 hover:text-primary-700 font-bold underline"

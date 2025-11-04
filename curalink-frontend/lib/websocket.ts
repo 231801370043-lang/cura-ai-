@@ -1,11 +1,10 @@
-import { io, Socket } from 'socket.io-client';
 
 const WS_URL = process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:8000';
 
 class WebSocketManager {
   private socket: WebSocket | null = null;
   private userId: string | null = null;
-  private listeners: Map<string, Set<Function>> = new Map();
+  private listeners: Map<string, Set<(data: unknown) => void>> = new Map();
 
   connect(userId: string) {
     if (this.socket?.readyState === WebSocket.OPEN) {
@@ -51,27 +50,27 @@ class WebSocketManager {
     this.userId = null;
   }
 
-  send(data: any) {
+  send(data: unknown) {
     if (this.socket?.readyState === WebSocket.OPEN) {
       this.socket.send(JSON.stringify(data));
     }
   }
 
-  on(eventType: string, callback: Function) {
+  on(eventType: string, callback: (data: unknown) => void) {
     if (!this.listeners.has(eventType)) {
       this.listeners.set(eventType, new Set());
     }
     this.listeners.get(eventType)!.add(callback);
   }
 
-  off(eventType: string, callback: Function) {
+  off(eventType: string, callback: (data: unknown) => void) {
     const listeners = this.listeners.get(eventType);
     if (listeners) {
       listeners.delete(callback);
     }
   }
 
-  private notifyListeners(eventType: string, data: any) {
+  private notifyListeners(eventType: string, data: unknown) {
     const listeners = this.listeners.get(eventType);
     if (listeners) {
       listeners.forEach((callback) => callback(data));

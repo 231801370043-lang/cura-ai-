@@ -4,9 +4,9 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import {
-  Brain, Users, MessageCircle, FileText, LogOut, Menu, Home, BookOpen, Settings, Plus, Sun, Moon, X
+  Brain, Users, MessageCircle, FileText, LogOut, Menu, Home, BookOpen, Plus, Sun, Moon, X
 } from 'lucide-react';
-import { usersAPI, forumsAPI, meetingsAPI, notificationsAPI } from '@/lib/api';
+import { forumsAPI, meetingsAPI, notificationsAPI } from '@/lib/api';
 import CreateForumModal from '@/components/CreateForumModal';
 import ConversationChatModal from '@/components/ConversationChatModal';
 import VideoCallModal from '@/components/VideoCallModal';
@@ -15,7 +15,44 @@ import NotificationBanner from '@/components/NotificationBanner';
 import { useNotifications } from '@/contexts/NotificationContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import ChatModal from '@/components/ChatModal';
-import dynamic from 'next/dynamic';
+
+interface User {
+  id: string;
+  full_name: string;
+  specialization?: string;
+}
+
+interface Forum {
+  id: string;
+  title: string;
+  description: string;
+  created_at: string;
+  author: { full_name: string };
+  category?: string;
+}
+
+interface Meeting {
+  id: string;
+  _id?: string;
+  status: string;
+  message: string;
+  description?: string;
+  organizer_id: string;
+  organizer?: { id: string; full_name: string };
+  requester?: { id: string; full_name: string };
+  scheduled_time?: string;
+  populated_participants?: { id: string; full_name: string }[];
+}
+
+interface ErrorResponse {
+  response?: {
+    status: number;
+    data?: {
+      detail: string | { msg: string }[] | unknown;
+    };
+  };
+  message?: string;
+}
 
 export default function ResearcherDashboard() {
   const router = useRouter();
@@ -31,17 +68,17 @@ export default function ResearcherDashboard() {
   } = useNotifications();
   const [activeTab, setActiveTab] = useState('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [user, setUser] = useState<any>(null);
-  const [forums, setForums] = useState<any[]>([]);
-  const [meetings, setMeetings] = useState<any[]>([]);
+  const [user, setUser] = useState<User | null>(null);
+  const [forums, setForums] = useState<Forum[]>([]);
+  const [meetings, setMeetings] = useState<Meeting[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showCreateForum, setShowCreateForum] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
-  const [chatUser, setChatUser] = useState<{ id: number; full_name: string } | null>(null);
+  const [chatUser] = useState<{ id: number; full_name: string } | null>(null);
   const [showVideoCall, setShowVideoCall] = useState(false);
   const [showChat, setShowChat] = useState(false);
-  const [selectedMeeting, setSelectedMeeting] = useState<any>(null);
+  const [selectedMeeting, setSelectedMeeting] = useState<Meeting | null>(null);
   const [videoOpen, setVideoOpen] = useState(false);
   const [videoRoom, setVideoRoom] = useState<string>('');
 
@@ -250,6 +287,9 @@ export default function ResearcherDashboard() {
                     try {
                       if (notification?.sender_id) {
                         setSelectedMeeting({
+                          id: '',
+                          status: '',
+                          message: '',
                           organizer_id: notification.sender_id,
                           organizer: {
                             id: notification.sender_id,
@@ -396,14 +436,14 @@ export default function ResearcherDashboard() {
               </div>
 
               <div>
-                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Pending Meeting Requests ({meetings.filter((m: any) => m.status === 'pending').length})</h3>
+                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Pending Meeting Requests ({meetings.filter((m: Meeting) => m.status === 'pending').length})</h3>
                 <div className="space-y-4">
-                  {meetings.filter((m: any) => m.status === 'pending').length === 0 ? (
+                  {meetings.filter((m: Meeting) => m.status === 'pending').length === 0 ? (
                     <div className="bg-white dark:bg-slate-800 rounded-xl p-8 text-center shadow-lg border border-gray-100 dark:border-slate-700">
                       <p className="text-gray-500 dark:text-gray-400">No pending meeting requests</p>
                     </div>
                   ) : (
-                    meetings.filter((m: any) => m.status === 'pending').slice(0, 5).map((meeting) => (
+                    meetings.filter((m: Meeting) => m.status === 'pending').slice(0, 5).map((meeting: Meeting) => (
                     <motion.div key={meeting.id} className="bg-white dark:bg-slate-800 rounded-xl p-6 flex items-center justify-between shadow-lg hover:shadow-xl transition-all border border-gray-100 dark:border-slate-700" whileHover={{ x: 5 }}>
                       <div>
                         <h4 className="font-bold text-gray-900 dark:text-white mb-1 text-lg">{meeting.requester?.full_name}</h4>
@@ -446,20 +486,20 @@ export default function ResearcherDashboard() {
 
 
               <div>
-                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Accepted Meetings ({meetings.filter((m: any) => m.status === 'accepted' || m.status === 'scheduled').length})</h3>
+                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Accepted Meetings ({meetings.filter((m: Meeting) => m.status === 'accepted' || m.status === 'scheduled').length})</h3>
                 <div className="space-y-4">
-                  {meetings.filter((m: any) => m.status === 'accepted' || m.status === 'scheduled').length === 0 ? (
+                  {meetings.filter((m: Meeting) => m.status === 'accepted' || m.status === 'scheduled').length === 0 ? (
                     <div className="bg-white dark:bg-slate-800 rounded-xl p-8 text-center shadow-lg border border-gray-100 dark:border-slate-700">
                       <p className="text-gray-500 dark:text-gray-400">No accepted meetings yet</p>
                     </div>
                   ) : (
-                    meetings.filter((m: any) => m.status === 'accepted' || m.status === 'scheduled').slice(0, 5).map((meeting) => (
+                    meetings.filter((m: Meeting) => m.status === 'accepted' || m.status === 'scheduled').slice(0, 5).map((meeting: Meeting) => (
                     <motion.div key={meeting.id} className="bg-white dark:bg-slate-800 rounded-xl p-6 flex items-center justify-between shadow-lg hover:shadow-xl transition-all border border-gray-100 dark:border-slate-700" whileHover={{ x: 5 }}>
                       <div>
                         <h4 className="font-bold text-gray-900 dark:text-white mb-1 text-lg">{meeting.organizer?.full_name || 'Patient'}</h4>
                         <p className="text-sm text-gray-700 dark:text-gray-300">{meeting.description}</p>
                         <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                          Scheduled: {new Date(meeting.scheduled_time).toLocaleString()}
+                          Scheduled: {meeting.scheduled_time ? new Date(meeting.scheduled_time).toLocaleString() : 'Not scheduled'}
                         </p>
                       </div>
                       <div className="flex gap-2">
@@ -725,6 +765,9 @@ export default function ResearcherDashboard() {
               try {
                 if (notification?.sender_id) {
                   setSelectedMeeting({
+                    id: '',
+                    status: '',
+                    message: '',
                     organizer_id: notification.sender_id,
                     organizer: {
                       id: notification.sender_id,
