@@ -1,6 +1,5 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: 'standalone',
   trailingSlash: false,
   generateEtags: false,
   poweredByHeader: false,
@@ -10,6 +9,12 @@ const nextConfig = {
   },
   images: {
     unoptimized: true
+  },
+  eslint: {
+    ignoreDuringBuilds: false,
+  },
+  typescript: {
+    ignoreBuildErrors: false,
   }
 };
 

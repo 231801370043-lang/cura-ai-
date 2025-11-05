@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import {
@@ -102,36 +102,7 @@ export default function PatientDashboard() {
   const [showVideoCall, setShowVideoCall] = useState(false);
   const [videoRoom, setVideoRoom] = useState('');
 
-  useEffect(() => {
-    const userData = localStorage.getItem('user');
-    if (!userData) {
-      router.push('/login');
-      return;
-    }
-    setUser(JSON.parse(userData));
-    loadData();
-  }, []);
-
-  // Handle auto-opening video modal for accepted calls
-  useEffect(() => {
-    // Check for "Call Accepted" notifications and auto-open video modal
-    const callAcceptedNotification = notifications.find(n => 
-      n.title === 'Call Accepted' && 
-      n.type === 'video_call' && 
-      !n.read && 
-      n.call_room
-    );
-    
-    if (callAcceptedNotification && callAcceptedNotification.call_room) {
-      console.log('Call accepted! Auto-opening video modal with room:', callAcceptedNotification.call_room);
-      setVideoRoom(callAcceptedNotification.call_room);
-      setShowVideoCall(true);
-      // Mark as read
-      markAsRead(callAcceptedNotification.id);
-    }
-  }, [notifications, markAsRead]);
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -203,7 +174,36 @@ export default function PatientDashboard() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [router]);
+
+  useEffect(() => {
+    const userData = localStorage.getItem('user');
+    if (!userData) {
+      router.push('/login');
+      return;
+    }
+    setUser(JSON.parse(userData));
+    loadData();
+  }, [loadData, router]);
+
+  // Handle auto-opening video modal for accepted calls
+  useEffect(() => {
+    // Check for "Call Accepted" notifications and auto-open video modal
+    const callAcceptedNotification = notifications.find(n => 
+      n.title === 'Call Accepted' && 
+      n.type === 'video_call' && 
+      !n.read && 
+      n.call_room
+    );
+    
+    if (callAcceptedNotification && callAcceptedNotification.call_room) {
+      console.log('Call accepted! Auto-opening video modal with room:', callAcceptedNotification.call_room);
+      setVideoRoom(callAcceptedNotification.call_room);
+      setShowVideoCall(true);
+      // Mark as read
+      markAsRead(callAcceptedNotification.id);
+    }
+  }, [notifications, markAsRead]);
 
   // Polling for meetings to keep in sync with researcher actions
   useEffect(() => {
