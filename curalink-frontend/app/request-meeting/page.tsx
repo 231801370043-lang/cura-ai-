@@ -40,7 +40,7 @@ function RequestMeetingContent() {
     } finally {
       setLoading(false);
     }
-  }, [expertId, router]);
+  }, [expertId]);
 
   useEffect(() => {
     if (!expertId) {
