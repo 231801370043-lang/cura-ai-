@@ -46,7 +46,7 @@ export default function ConversationChatModal({ isOpen, onClose, otherUser }: Co
     return () => {
       if (pollRef.current) window.clearInterval(pollRef.current);
     };
-  }, [isOpen, otherUser?.id]);
+  }, [isOpen, otherUser]);
 
   const send = async () => {
     if (!input.trim() || !otherUser) return;

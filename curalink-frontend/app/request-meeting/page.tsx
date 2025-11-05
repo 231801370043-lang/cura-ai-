@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect, useCallback, Suspense } from 'react';
 import { motion } from 'framer-motion';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Calendar, Video, MessageCircle, ArrowLeft, Loader, CheckCircle } from 'lucide-react';
@@ -23,15 +23,7 @@ function RequestMeetingContent() {
     meeting_type: 'video' as 'video' | 'chat'
   });
 
-  useEffect(() => {
-    if (!expertId) {
-      router.push('/dashboard/patient');
-      return;
-    }
-    loadExpert();
-  }, [expertId]);
-
-  const loadExpert = async () => {
+  const loadExpert = useCallback(async () => {
     try {
       // For now, we'll use mock data since we don't have a direct expert API
       // In a real app, you'd fetch the expert details
@@ -48,7 +40,15 @@ function RequestMeetingContent() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [expertId, router]);
+
+  useEffect(() => {
+    if (!expertId) {
+      router.push('/dashboard/patient');
+      return;
+    }
+    loadExpert();
+  }, [expertId, loadExpert, router]);
 
   const formatMessage = () => {
     const dateStr = formData.preferred_date 

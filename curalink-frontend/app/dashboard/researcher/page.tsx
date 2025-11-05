@@ -81,7 +81,7 @@ export default function ResearcherDashboard() {
     }
     setUser(JSON.parse(userData));
     loadData();
-  }, []);
+  }, [router]);
 
   // Handle auto-opening video modal for accepted calls
   useEffect(() => {

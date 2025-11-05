@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Send, MessageCircle } from 'lucide-react';
 import { chatAPI } from '@/lib/api';
@@ -36,6 +36,17 @@ export default function ChatModal({ isOpen, onClose, otherUser }: ChatModalProps
     }
   }, []);
 
+  const loadMessages = useCallback(async () => {
+    try {
+      console.log('Loading messages for user:', otherUser.id);
+      const response = await chatAPI.getMessages(otherUser.id);
+      console.log('Messages loaded:', response.data);
+      setMessages(response.data || []);
+    } catch (error: unknown) {
+      console.error('Error loading messages:', error);
+    }
+  }, [otherUser.id]);
+
   useEffect(() => {
     if (isOpen) {
       loadMessages();
@@ -47,7 +58,7 @@ export default function ChatModal({ isOpen, onClose, otherUser }: ChatModalProps
       
       return () => clearInterval(interval);
     }
-  }, [isOpen, otherUser.id]);
+  }, [isOpen, otherUser.id, loadMessages]);
 
   useEffect(() => {
     scrollToBottom();
@@ -55,17 +66,6 @@ export default function ChatModal({ isOpen, onClose, otherUser }: ChatModalProps
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
-
-  const loadMessages = async () => {
-    try {
-      console.log('Loading messages for user:', otherUser.id);
-      const response = await chatAPI.getMessages(otherUser.id);
-      console.log('Messages loaded:', response.data);
-      setMessages(response.data || []);
-    } catch (error) {
-      console.error('Failed to load messages:', error);
-    }
   };
 
   const sendMessage = async (e: React.FormEvent) => {
